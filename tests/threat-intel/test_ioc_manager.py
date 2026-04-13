@@ -3,9 +3,9 @@ import os
 import sys
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../threat-intel"))
 
-from threat_intel.engine.ioc_manager import IOCManager
+from engine.ioc_manager import IOCManager
 
 
 class TestIOCManager:

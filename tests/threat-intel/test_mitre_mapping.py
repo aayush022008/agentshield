@@ -3,16 +3,16 @@ import os
 import sys
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../threat-intel"))
 
-from threat_intel.mitre.mapper import (
+from mitre.mapper import (
     load_techniques,
     map_alert_to_techniques,
     map_event_to_techniques,
     get_technique,
     get_techniques_by_tactic,
 )
-from threat_intel.engine.ttps_mapper import TTPs_Mapper
+from engine.ttps_mapper import TTPs_Mapper
 
 
 class TestMITREMapper:

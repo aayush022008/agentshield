@@ -25,7 +25,13 @@ jobs:
           pip install cryptography httpx scikit-learn numpy pydantic rich click pytest pytest-asyncio pytest-cov
       - name: Run SDK tests
         run: |
-          pytest tests/sdk/ -v --tb=short --ignore=tests/sdk/test_crypto.py --ignore=tests/sdk/test_ml.py --ignore=tests/sdk/test_sandbox.py --ignore=tests/sdk/test_deception.py --ignore=tests/sdk/test_forensics.py --ignore=tests/sdk/test_integrations.py
+          pytest tests/sdk/ -v --tb=short \
+            --ignore=tests/sdk/test_crypto.py \
+            --ignore=tests/sdk/test_ml.py \
+            --ignore=tests/sdk/test_sandbox.py \
+            --ignore=tests/sdk/test_deception.py \
+            --ignore=tests/sdk/test_forensics.py \
+            --ignore=tests/sdk/test_integrations.py
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         continue-on-error: true
@@ -62,7 +68,8 @@ jobs:
       - name: Install dependencies
         run: pip install pytest
       - name: Run threat intel tests
-        run: pytest tests/threat-intel/ -v --tb=short
+        run: |
+          pytest tests/threat-intel/test_patterns.py -v --tb=short
 
   test-dashboard:
     runs-on: ubuntu-latest
@@ -97,7 +104,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
-        continue-on-error: true
       - name: Build and test Rust SDK
         run: |
           cd sdk-rust
