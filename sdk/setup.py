@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="agentfortress",
-    version="1.0.0",
+    version="1.0.1",
     description="Runtime protection and security monitoring for AI agents",
     author="Aayush",
     author_email="aayush022008@gmail.com",
