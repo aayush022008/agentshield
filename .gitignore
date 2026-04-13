@@ -66,3 +66,4 @@ secrets.json
 # Build artifacts
 *.whl
 *.tar.gz
+sdk-js/.npmrc

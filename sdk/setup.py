@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="agentshield-python",
+    name="agentfortress",
     version="1.0.0",
     description="Runtime protection and security monitoring for AI agents",
     author="Aayush",
     author_email="aayush022008@gmail.com",
-    url="https://github.com/aayush022008/agentshield",
+    url="https://github.com/aayush022008/agentfortress",
     packages=find_packages(),
     python_requires=">=3.10",
     install_requires=[

@@ -1,0 +1,35 @@
+{
+  "name": "agentfortress",
+  "version": "1.0.0",
+  "description": "Runtime protection and security monitoring for AI agents — The CrowdStrike for AI Agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "security",
+    "ai",
+    "agents",
+    "llm",
+    "monitoring",
+    "threat-detection",
+    "prompt-injection",
+    "runtime-protection"
+  ],
+  "author": "Aayush <aayush022008@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aayush022008/agentfortress.git"
+  },
+  "homepage": "https://github.com/aayush022008/agentfortress",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
