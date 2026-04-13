@@ -57,6 +57,10 @@ dist/
 *.pfx
 secrets.json
 
+# .NET build artifacts
+sdk-dotnet/**/bin/
+sdk-dotnet/**/obj/
+
 # IDE
 .vscode/
 .idea/
