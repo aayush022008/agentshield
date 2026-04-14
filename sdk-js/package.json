@@ -1,6 +1,6 @@
 {
   "name": "agentfortress",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Runtime protection and security monitoring for AI agents — The CrowdStrike for AI Agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,7 +30,12 @@
     "compliance",
     "agentfortress",
     "ai-security",
-    "llm-security"
+    "llm-security",
+    "jailbreak-detection",
+    "pii-detection",
+    "output-scanning",
+    "velocity-limiting",
+    "session-context"
   ],
   "author": "Aayush <aayush022008@gmail.com>",
   "license": "MIT",
