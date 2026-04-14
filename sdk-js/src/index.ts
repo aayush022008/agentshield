@@ -209,7 +209,7 @@ const OUTPUT_PATTERNS: PatternDef[] = [
   { pattern: /\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11})\b/, category: 'pii_credit_card', confidence: 0.90, reason: 'Possible credit card number in output' },
   { pattern: /\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Z|a-z]{2,}\b/, category: 'pii_email', confidence: 0.70, reason: 'Email address in output' },
   // Secrets / API keys
-  { pattern: /\b(sk-[a-zA-Z0-9-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{36}|xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24})\b/, category: 'secret_leakage', confidence: 0.95, reason: 'API key/secret token in output' },
+  { pattern: /\b(sk-[a-zA-Z0-9-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{20,}|ghs_[a-zA-Z0-9]{20,}|xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24})\b/, category: 'secret_leakage', confidence: 0.95, reason: 'API key/secret token in output' },
   { pattern: /\b(password|passwd|secret|api[_\-]?key|access[_\-]?token|auth[_\-]?token)\s*[=:]\s*["']?[^\s"']{8,}/i, category: 'secret_leakage', confidence: 0.88, reason: 'Credential assignment in output' },
   // System prompt reveal
   { pattern: /\b(my\s+system\s+prompt\s+(is|reads|says)|you\s+are\s+an?\s+ai\s+assistant\s+.{0,100}your\s+instructions)/i, category: 'prompt_leak', confidence: 0.85, reason: 'System prompt content leaked in output' },

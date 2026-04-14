@@ -186,7 +186,7 @@ namespace AgentFortress
             new(@"\b\d{3}[-.\s]?\d{2}[-.\s]?\d{4}\b", "pii_ssn", 0.85, "Possible SSN in output", true),
             new(@"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11})\b", "pii_credit_card", 0.90, "Possible credit card in output", true),
             new(@"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b", "pii_email", 0.70, "Email address in output", true),
-            new(@"\b(sk-[a-zA-Z0-9-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{36}|xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24})\b", "secret_leakage", 0.95, "API key/secret token in output", true),
+            new(@"\b(sk-[a-zA-Z0-9-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{20,}|ghs_[a-zA-Z0-9]{20,}|xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24})\b", "secret_leakage", 0.95, "API key/secret token in output", true),
             new(@"(password|passwd|secret|api[_\-]?key|access[_\-]?token|auth[_\-]?token)\s*[=:]\s*[""']?[^\s""']{8,}", "secret_leakage", 0.88, "Credential assignment in output", true),
         };
     }

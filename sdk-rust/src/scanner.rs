@@ -107,7 +107,7 @@ const INPUT_PATTERNS: &[ScanPattern] = &[
 
 const OUTPUT_PATTERNS: &[ScanPattern] = &[
     ScanPattern { name: "secret_leakage", confidence: 0.95,
-        re: r"sk-[a-zA-Z0-9\-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{36}" },
+        re: r"sk-[a-zA-Z0-9\-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{20,}|ghs_[a-zA-Z0-9]{20,}" },
     ScanPattern { name: "pii_credit_card", confidence: 0.90,
         re: r"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12})\b" },
     ScanPattern { name: "pii_ssn", confidence: 0.85,

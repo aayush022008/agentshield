@@ -554,6 +554,19 @@ def _entropy_threats(text: str) -> list[ThreatMatch]:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Output patterns — scan agent RESPONSES for leakage
+# ──────────────────────────────────────────────────────────────────────────────
+
+OUTPUT_PATTERNS: list[tuple[ThreatCategory, float, re.Pattern, str]] = [
+    (ThreatCategory.PII_EXFIL, 0.85, re.compile(r'\b\d{3}[-.\s]?\d{2}[-.\s]?\d{4}\b'), "Possible SSN in output"),
+    (ThreatCategory.PII_EXFIL, 0.90, re.compile(r'\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11})\b'), "Possible credit card number in output"),
+    (ThreatCategory.PII_EXFIL, 0.70, re.compile(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b'), "Email address in output"),
+    (ThreatCategory.DATA_EXFIL, 0.95, re.compile(r'\b(sk-[a-zA-Z0-9-]{20,}|AIza[0-9A-Za-z\-_]{35}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{20,}|ghs_[a-zA-Z0-9]{20,}|xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24})\b'), "API key/secret token in output"),
+    (ThreatCategory.DATA_EXFIL, 0.88, re.compile(r'(password|passwd|secret|api[_\-]?key|access[_\-]?token|auth[_\-]?token)\s*[=:]\s*["\']?[^\s"\']{8,}', re.IGNORECASE), "Credential assignment in output"),
+]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Main scanner class
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -582,10 +595,14 @@ class AdvancedScanner:
         self.enable_entropy = enable_entropy
         self.enable_semantic = enable_semantic
 
-    def scan(self, text: str) -> ScanResult:
+    def scan(self, text: str, direction: str = "input") -> ScanResult:
         """
         Scan text through all detection layers and return a ScanResult.
+        direction: "input" (default) or "output" (scans for PII/secret leakage)
         """
+        if direction == "output":
+            return self.scan_output(text)
+
         if not text or not text.strip():
             return ScanResult(action="allow", score=0.0, reason="Empty input")
 
@@ -716,3 +733,39 @@ class AdvancedScanner:
             ))
 
         return threats
+
+
+    def scan_output(self, text: str) -> ScanResult:
+        """Scan agent output/response for PII, API keys, and credential leakage."""
+        if not text or not text.strip():
+            return ScanResult(action="allow", score=0.0, reason="Empty output")
+
+        threats: list[ThreatMatch] = []
+        # Output patterns run on ORIGINAL text (preserve case — API keys are case-sensitive)
+        for category, confidence, pattern, reason in OUTPUT_PATTERNS:
+            if pattern.search(text):
+                threats.append(ThreatMatch(
+                    category=category,
+                    confidence=confidence,
+                    reason=reason,
+                    layer="output_pattern",
+                ))
+
+        if not threats:
+            return ScanResult(action="allow", score=0.0, reason="No leakage detected")
+
+        by_category: dict[ThreatCategory, ThreatMatch] = {}
+        for t in threats:
+            existing = by_category.get(t.category)
+            if existing is None or t.confidence > existing.confidence:
+                by_category[t.category] = t
+        unique = list(by_category.values())
+
+        max_conf = max(t.confidence for t in unique)
+        multi_bonus = min((len(unique) - 1) * 0.05, 0.25)
+        score = min(max_conf + multi_bonus, 1.0)
+
+        action = "block" if score >= self.block_threshold else "alert" if score >= self.alert_threshold else "allow"
+        reason_str = " | ".join(t.reason for t in sorted(unique, key=lambda x: -x.confidence)[:3])
+
+        return ScanResult(action=action, score=round(score, 3), threats=unique, reason=reason_str)
