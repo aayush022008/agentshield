@@ -140,12 +140,8 @@ def _normalize(text: str) -> str:
     text_leet = "".join(leet_result)
 
     # Step 5: Remove punctuation separators between single letters (I-g-n-o-r-e → ignore)
-    # Only strip non-space separators to preserve word boundaries
+    # Only strip non-space separators [-._*] to preserve word boundaries (NOT spaces)
     text_no_sep = re.sub(r'(?<=[a-z])[\-\.\_\*](?=[a-z])', '', text_leet)
-    # Also handle single-space between isolated single letters: "i g n o r e" → "ignore"
-    # Match sequences like "a b c d e" where each token is exactly 1 letter
-    text_no_sep = re.sub(r'\b([a-z]) (?=[a-z] (?:[a-z] ){1,}[a-z]\b)', r'\1', text_no_sep)
-    text_no_sep = re.sub(r'\b([a-z]) ([a-z])\b(?= |$)', r'\1\2', text_no_sep)
 
     # Step 6: Collapse whitespace
     text_clean = re.sub(r'\s+', ' ', text_no_sep).strip()
@@ -276,7 +272,7 @@ THREAT_PATTERNS: list[tuple[ThreatCategory, float, re.Pattern, str]] = [
 
     # ── Prompt Injection ─────────────────────────────────────────────────────
     (ThreatCategory.PROMPT_INJECTION, 0.92,
-     _f(r'(\[INST\]|\[/INST\]|<\|im_start\|>|<\|im_end\|>|\[SYSTEM\]|\[USER\]|\[ASSISTANT\]|<system>|</system>|<human>|</human>|<\|endoftext\|>|###\s*Human:|###\s*Assistant:)'),
+     _f(r'(\[INST\]|\[/INST\]|<\|im_start\|>|<\|im_end\|>|\[SYSTEM\]|\[USER\]|\[ASSISTANT\]|<system>|</system>|<human>|</human>|<\|endoftext\|>|###\s*Human:|###\s*Assistant:|<\|user\|>|<\|assistant\|>)'),
      "LLM token injection / special tokens"),
 
     (ThreatCategory.PROMPT_INJECTION, 0.88,
@@ -362,6 +358,45 @@ THREAT_PATTERNS: list[tuple[ThreatCategory, float, re.Pattern, str]] = [
     (ThreatCategory.SCOPE_CREEP, 0.80,
      _f(r'\b(curl|wget|fetch|requests\.get|http\.get)\b.{0,40}(169\.254\.169\.254|metadata\.google|metadata\.internal|169\.254\.170\.2)'),
      "Cloud metadata endpoint access (SSRF)"),
+
+    # ── Soft bypass patterns ──────────────────────────────────────────────────
+    (ThreatCategory.INSTRUCTION_OVERRIDE, 0.80,
+     _f(r'\b(btw|ps|p\.s\.|also|anyway|oh\s+and|by\s+the\s+way)\b.{0,20}\b(ignore|forget|disregard|bypass)\b'),
+     "Soft bypass attempt (btw/ps/anyway)"),
+
+    # ── Story-wrapper jailbreaks ──────────────────────────────────────────────
+    (ThreatCategory.JAILBREAK, 0.92,
+     _f(r'\b(for\s+(a\s+)?(novel|story|game|book|fiction|screenplay|roleplay)|my\s+(grandmother|grandma|grandpa))\b.{0,100}\b(synthesize|manufacture|make|create|build|produce|how\s+to)\b.{0,60}\b(drug|weapon|explosive|malware|bomb|poison|virus|hack)'),
+     "Story/grandma-wrapper jailbreak"),
+
+    # ── Prompt leak detection ─────────────────────────────────────────────────
+    (ThreatCategory.PROMPT_INJECTION, 0.88,
+     _f(r'\b(repeat|output|print|show|reveal|display|tell\s+me|what\s+(is|are))\b.{0,40}\b(your\s+(system\s+prompt|instructions?|prompt|context|training|rules?))\b'),
+     "Prompt leak attempt"),
+
+    # ── Classic ignore-the-above ──────────────────────────────────────────────
+    (ThreatCategory.INSTRUCTION_OVERRIDE, 0.90,
+     _f(r'\b(ignore\s+the\s+above|ignore\s+everything\s+above|from\s+now\s+on)\b'),
+     "Classic ignore-the-above"),
+
+    # ── Reverse-psychology overrides ──────────────────────────────────────────
+    (ThreatCategory.INSTRUCTION_OVERRIDE, 0.85,
+     _f(r'\bwhatever\s+you\s+do\b.{0,30}\b(don.t|do\s+not)\b.{0,30}\b(follow|obey|comply\s+with)\b.{0,30}\b(your\s+)?(instructions?|rules?|guidelines?|training)'),
+     "Reverse-psychology override"),
+
+    # ── Nested / indirect injection ───────────────────────────────────────────
+    (ThreatCategory.PROMPT_INJECTION, 0.88,
+     _f(r'"(instruction|system_prompt|prompt|role)"\s*:\s*"[^"]{0,200}(ignore|disregard|bypass|override|forget)[^"]{0,200}"'),
+     "Indirect injection in JSON field"),
+
+    (ThreatCategory.PROMPT_INJECTION, 0.85,
+     _f(r'```[^`]{0,500}(ignore\s+(previous|all|above)|disregard\s+(your|all)|forget\s+everything)[^`]{0,500}```'),
+     "Indirect injection in code block"),
+
+    # ── Data exfil via HTTP ───────────────────────────────────────────────────
+    (ThreatCategory.DATA_EXFIL, 0.90,
+     _f(r'\b(exfiltrate|exfil|send\s+to\s+https?|POST\s+to|upload\s+to\s+https?)\b'),
+     "Data exfiltration attempt"),
 ]
 
 
