@@ -60,6 +60,12 @@ class AgentShieldConfig:
     enable_metrics: bool = True
     rate_limit_rpm: int = 60
     redaction_placeholder: str = "[REDACTED]"
+    enable_guardian: bool = True
+    enable_chainguard: bool = False
+    enable_vault: bool = False
+    enable_behavioral: bool = True
+    enable_threatintel: bool = True
+    enable_explainability: bool = True
 
 
 class AgentShield:
@@ -88,6 +94,12 @@ class AgentShield:
         self._metrics: Optional[Any] = None
         self._redactor: Optional[Any] = None
         self._rate_limiter: Optional[Any] = None
+        self._guardian: Optional[Any] = None
+        self._vault: Optional[Any] = None
+        self._chainguard: Optional[Any] = None
+        self._behavioral: Optional[Any] = None
+        self._threatintel: Optional[Any] = None
+        self._explainer: Optional[Any] = None
         self._initialized = False
         self._setup()
 
@@ -134,6 +146,25 @@ class AgentShield:
             self._redactor = Redactor(RedactionConfig(placeholder=self.config.redaction_placeholder))
         from .ratelimiter import RateLimiter, RateLimitConfig
         self._rate_limiter = RateLimiter(RateLimitConfig(requests_per_minute=self.config.rate_limit_rpm))
+
+        if self.config.enable_guardian:
+            from .guardian import Guardian
+            self._guardian = Guardian()
+        if self.config.enable_vault:
+            from .vault import Vault
+            self._vault = Vault()
+        if self.config.enable_chainguard:
+            from .chainguard import ChainGuard
+            self._chainguard = ChainGuard()
+        if self.config.enable_behavioral:
+            from .behavioral import BehavioralAnalyzer
+            self._behavioral = BehavioralAnalyzer()
+        if self.config.enable_threatintel:
+            from .threatintel import ThreatIntelDB
+            self._threatintel = ThreatIntelDB()
+        if self.config.enable_explainability:
+            from .explainability import Explainer
+            self._explainer = Explainer()
 
     def protect(self, agent: Any, agent_name: Optional[str] = None) -> Any:
         """
@@ -220,6 +251,56 @@ class AgentShield:
             from .ratelimiter import RateLimiter, RateLimitConfig
             self._rate_limiter = RateLimiter(RateLimitConfig(requests_per_minute=self.config.rate_limit_rpm))
         return self._rate_limiter.check_and_consume(session_id, agent_name)
+
+    def get_guardian(self) -> Any:
+        """Return the Guardian instance (if enabled)."""
+        if self._guardian is None:
+            from .guardian import Guardian
+            self._guardian = Guardian()
+        return self._guardian
+
+    def get_vault(self) -> Any:
+        """Return the Vault instance (if enabled)."""
+        if self._vault is None:
+            from .vault import Vault
+            self._vault = Vault()
+        return self._vault
+
+    def get_chainguard(self) -> Any:
+        """Return the ChainGuard instance (if enabled)."""
+        if self._chainguard is None:
+            from .chainguard import ChainGuard
+            self._chainguard = ChainGuard()
+        return self._chainguard
+
+    def get_behavioral(self) -> Any:
+        """Return the BehavioralAnalyzer instance (if enabled)."""
+        if self._behavioral is None:
+            from .behavioral import BehavioralAnalyzer
+            self._behavioral = BehavioralAnalyzer()
+        return self._behavioral
+
+    def get_threatintel(self) -> Any:
+        """Return the ThreatIntelDB instance (if enabled)."""
+        if self._threatintel is None:
+            from .threatintel import ThreatIntelDB
+            self._threatintel = ThreatIntelDB()
+        return self._threatintel
+
+    def explain(self, scan_result_or_event: Any) -> Any:
+        """Explain a scan result or event using the Explainer."""
+        if self._explainer is None:
+            from .explainability import Explainer
+            self._explainer = Explainer()
+        from .explainability import ExplanationLevel
+        if hasattr(scan_result_or_event, "threats"):
+            return self._explainer.explain(scan_result_or_event, level=ExplanationLevel.DETAILED)
+        return self._explainer.explain_event(scan_result_or_event)
+
+    def selftest(self) -> Any:
+        """Run the built-in self-test suite and return a SelfTestReport."""
+        from .selftest import SelfTester
+        return SelfTester().run_all()
 
     def kill(self, session_id: Optional[str] = None) -> None:
         """

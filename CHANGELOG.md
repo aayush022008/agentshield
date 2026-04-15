@@ -2,6 +2,26 @@
 
 All notable changes to AgentFortress will be documented in this file.
 
+## [3.0.0] — 2026-04-15 — Enterprise Security Suite
+
+### Added
+- **Guardian** (`agentshield.guardian`): Autonomous threat response engine with configurable playbooks. Automatically blocks, throttles, quarantines, or kills sessions based on threat scores. Thread-safe with strike escalation.
+- **ChainGuard** (`agentshield.chainguard`): Multi-agent pipeline security. Registers agents in trust chains, verifies identity via HMAC tokens, detects privilege escalation, and flags suspicious inter-agent messages.
+- **Vault** (`agentshield.vault`): Secure in-memory secrets manager with XOR+base64 encryption. Issues access tokens, detects secret leaks in agent outputs, supports TTL and single-use tokens.
+- **BehavioralAnalyzer** (`agentshield.behavioral`): Session behavioral fingerprinting. Builds baseline profiles and detects deviations in prompt length, vocabulary, tool usage, and request timing.
+- **ThreatIntelDB** (`agentshield.threatintel`): Live IOC database with 25+ built-in signatures covering prompt injection, jailbreak, PII exfiltration, secret leaks, and token smuggling. Supports bulk feed import/export.
+- **Explainer** (`agentshield.explainability`): Decision explainability engine. Converts scan results into human-readable evidence, mitigations, and compliance reports (SOC2, GDPR, HIPAA, NIST).
+- **SelfTester** (`agentshield.selftest`): Built-in diagnostic suite with 16 test cases covering injection, jailbreak, encoding attacks, PII, API key detection, and safe inputs.
+- **AgentShieldConfig** extended with: `enable_guardian`, `enable_chainguard`, `enable_vault`, `enable_behavioral`, `enable_threatintel`, `enable_explainability`.
+- **AgentShield** extended with: `get_guardian()`, `get_vault()`, `get_chainguard()`, `get_behavioral()`, `get_threatintel()`, `explain()`, `selftest()`.
+- Bumped `__version__` to `3.0.0`.
+
+### Changed
+- All new modules are stdlib-only (no new dependencies).
+- All new features are backwards-compatible; no existing API changed.
+
+
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
