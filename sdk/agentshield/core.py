@@ -55,6 +55,11 @@ class AgentShieldConfig:
     batch_interval_seconds: float = 5.0
     allowed_tools: list[str] = field(default_factory=list)
     max_output_bytes: int = 100_000
+    enable_redaction: bool = False
+    enable_realtime_feed: bool = True
+    enable_metrics: bool = True
+    rate_limit_rpm: int = 60
+    redaction_placeholder: str = "[REDACTED]"
 
 
 class AgentShield:
@@ -79,6 +84,10 @@ class AgentShield:
         self._policy_engine: Optional[Any] = None
         self._audit_logger: Optional[Any] = None
         self._transport: Optional[Any] = None
+        self._realtime_feed: Optional[Any] = None
+        self._metrics: Optional[Any] = None
+        self._redactor: Optional[Any] = None
+        self._rate_limiter: Optional[Any] = None
         self._initialized = False
         self._setup()
 
@@ -113,6 +122,18 @@ class AgentShield:
             f"| offline={self.config.offline_mode} "
             f"| session={self._session_id}"
         )
+
+        if self.config.enable_realtime_feed:
+            from .realtime import RealTimeFeed
+            self._realtime_feed = RealTimeFeed()
+        if self.config.enable_metrics:
+            from .metrics import MetricsCollector
+            self._metrics = MetricsCollector.get_instance()
+        if self.config.enable_redaction:
+            from .redaction import Redactor, RedactionConfig
+            self._redactor = Redactor(RedactionConfig(placeholder=self.config.redaction_placeholder))
+        from .ratelimiter import RateLimiter, RateLimitConfig
+        self._rate_limiter = RateLimiter(RateLimitConfig(requests_per_minute=self.config.rate_limit_rpm))
 
     def protect(self, agent: Any, agent_name: Optional[str] = None) -> Any:
         """
@@ -156,6 +177,49 @@ class AgentShield:
         )
         logger.info(f"Protected agent: {agent_name or type(agent).__name__} with {wrapper_cls.__name__}")
         return wrapped
+
+    def get_realtime_feed(self) -> Any:
+        """Return the RealTimeFeed instance (if enabled)."""
+        if self._realtime_feed is None:
+            raise RuntimeError("Real-time feed is not enabled (enable_realtime_feed=False)")
+        return self._realtime_feed
+
+    def get_metrics(self) -> Any:
+        """Return the MetricsCollector singleton (if enabled)."""
+        if self._metrics is None:
+            raise RuntimeError("Metrics are not enabled (enable_metrics=False)")
+        return self._metrics
+
+    def redact(self, text: str) -> str:
+        """
+        Redact PII and secrets from text using the configured Redactor.
+
+        Args:
+            text: Input text.
+
+        Returns:
+            Redacted text string.
+        """
+        if self._redactor is None:
+            from .redaction import Redactor, RedactionConfig
+            self._redactor = Redactor(RedactionConfig(placeholder=self.config.redaction_placeholder))
+        return self._redactor.redact(text).redacted_text
+
+    def check_rate_limit(self, session_id: str, agent_name: str = "") -> Any:
+        """
+        Check rate limit for a session/agent.
+
+        Args:
+            session_id: Session identifier.
+            agent_name: Optional agent name for per-agent limits.
+
+        Returns:
+            RateLimitResult.
+        """
+        if self._rate_limiter is None:
+            from .ratelimiter import RateLimiter, RateLimitConfig
+            self._rate_limiter = RateLimiter(RateLimitConfig(requests_per_minute=self.config.rate_limit_rpm))
+        return self._rate_limiter.check_and_consume(session_id, agent_name)
 
     def kill(self, session_id: Optional[str] = None) -> None:
         """

@@ -13,6 +13,11 @@ from .core import AgentShield, AgentShieldConfig, init, protect, get_instance
 from .interceptor import Interceptor, InterceptorEvent, EventType
 from .policies.engine import PolicyEngine, PolicyAction
 from .audit.logger import AuditLogger
+from .realtime import RealTimeFeed, ThreatAlert, AlertSeverity
+from .context import ContextAnalyzer, ContextThreatResult, ConversationContext
+from .ratelimiter import RateLimiter, RateLimitConfig, RateLimitResult
+from .redaction import Redactor, RedactionConfig, RedactionResult, RedactionCategory
+from .metrics import MetricsCollector, MetricType
 
 __version__ = "1.0.0"
 __all__ = [
@@ -27,4 +32,19 @@ __all__ = [
     "PolicyEngine",
     "PolicyAction",
     "AuditLogger",
+    "RealTimeFeed",
+    "ThreatAlert",
+    "AlertSeverity",
+    "ContextAnalyzer",
+    "ContextThreatResult",
+    "ConversationContext",
+    "RateLimiter",
+    "RateLimitConfig",
+    "RateLimitResult",
+    "Redactor",
+    "RedactionConfig",
+    "RedactionResult",
+    "RedactionCategory",
+    "MetricsCollector",
+    "MetricType",
 ]
